@@ -1,0 +1,28 @@
+.dash-table {
+  margin-top: 1rem;
+  min-width: 90%;
+}
+.main-wrapper{
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.filter-wrapper{
+  display: flex;
+  flex-direction: row;
+}
+
+.filter{
+  max-width: 40%;
+  min-width: 20%;
+  padding: 10px;
+
+
+}
+
+.main-table-header-wrapper{
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}

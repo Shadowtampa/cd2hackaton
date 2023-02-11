@@ -1,0 +1,16 @@
+.login-form {
+  
+  max-width: 30rem;
+
+  display: grid;
+
+}
+.main-wrapper{
+  display: flex;
+  justify-content: center;
+  align-items: center;
+
+  
+
+  
+}
