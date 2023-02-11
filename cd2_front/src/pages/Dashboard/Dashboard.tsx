@@ -44,6 +44,10 @@ export const Dashboard = () => {
   const [origemCoords, setOrigemCoords] = useState({ lat: -2.4382325, lng: -54.7158996 });
   const [destinoCoords, setDestinoCoords] = useState({ lat: -2.4382325, lng: -54.7158996 });
 
+  const [meioTransporte, setMeioTransporte] = useState("WALKING");
+
+  const [timeUntilGoal, setTimeUntilGoal] = useState(0);
+
   const mapRef = useRef(null);
 
   const updateMap = () => {
@@ -51,14 +55,15 @@ export const Dashboard = () => {
     //Cria uma instância do DirectionsService do Google Maps
     const directionsService = new google.maps.DirectionsService();
 
+    console.log(meioTransporte === "WALKING")
     //Solicita a rota entre as coordenadas de origem e destino
     directionsService.route(
       {
         origin: origemCoords,
         destination: destinoCoords,
-        travelMode: google.maps.TravelMode.DRIVING,
-        provideRouteAlternatives: true
-      },
+        travelMode: google.maps.TravelMode.WALKING
+      }
+      ,
       (result, status) => {
         //Se o status da solicitação de rota for OK e o mapa estiver pronto
         if (status === google.maps.DirectionsStatus.OK && mapRef.current !== null) {
@@ -83,37 +88,41 @@ export const Dashboard = () => {
   // Função para atualizar o gráfico
   const handleUpdateChart = () => {
 
-    console.log("handleUpdateChart")
+    // console.log("handleUpdateChart")
 
     // Endereço de proxy para contornar restrições de CORS
     const API_PROXY = 'https://cors-anywhere.herokuapp.com/';
 
     // Criação de uma instância da API Axios, configurada com a URL base
     const api = axios.create({
-      baseURL: API_PROXY + `https://maps.googleapis.com/`
+      baseURL:  `https://maps.googleapis.com/`
     });
 
     // Requisição à API do Google Maps para obter informações sobre a rota
-    api.get(`maps/api/directions/json?origin=${origem}&destination=${destino}&key=${_API}`)
+    api.get(`maps/api/directions/json?origin=${origem}&destination=${destino}&key=${_API}&mode=${meioTransporte}`)
       .then(response => {
         // Armazenamento das coordenadas de origem e destino retornadas pela API
         setOrigemCoords({ lat: response.data.routes[0].legs[0].start_location.lat, lng: response.data.routes[0].legs[0].start_location.lng })
         setDestinoCoords({ lat: response.data.routes[0].legs[0].end_location.lat, lng: response.data.routes[0].legs[0].end_location.lng })
+        setTimeUntilGoal(oldState => oldState = response.data.routes[0].legs[0].duration.text)
       })
       .catch(error => {
         // Tratamento de erros
         console.error(error);
       });
+
+      updateMap()
   }
 
+
   useEffect(() => {
-    console.log("executado pois código foi ativado")
+    // console.log("executado pois código foi ativado")
     updateMap()
   }, [destinoCoords, origemCoords])
 
   useEffect(() => {
 
-    console.log("primeira exec")
+    // console.log("primeira exec")
     // Verifica se o navegador suporta a API de geolocalização
     if (navigator.geolocation) {
       // Obtém a localização atual do usuário
@@ -129,22 +138,27 @@ export const Dashboard = () => {
         // Atualiza o estado "origem" e o "destinoC" com a mesma localização atual
         setOrigem((oldState: any) => oldState = pos.lat.toString() + "," + pos.lng.toString())
         setDestino((oldState: any) => oldState = pos.lat.toString() + "," + pos.lng.toString())
-        
+
       });
     }
 
     // Cria uma nova instância de "DirectionsService" do Google Maps API
     const directionsService = new google.maps.DirectionsService();
-
+    // console.log(meioTransporte === "WALKING")
     // Solicita uma rota de direções do serviço
     directionsService.route(
       {
+
+       
         // Define a origem da rota como a localização atual do usuário
         origin: origemCoords,
         // Define o destino da rota com o valor armazenado em "destination"
         destination: destinoCoords,
-        // Define o modo de viagem como "DRIVING" (dirigindo)
-        travelMode: google.maps.TravelMode.DRIVING
+
+        
+        travelMode: google.maps.TravelMode.WALKING
+
+
       },
       (result, status) => {
         // Verifica se o status da solicitação é "OK"
@@ -169,6 +183,15 @@ export const Dashboard = () => {
       }
     );
   }, []);
+
+  useEffect(() => {
+    // console.log(meioTransporte)
+
+    let _temp = origem;
+    setDestino(oldState => oldState = destino)
+    setOrigem((oldState: any) => oldState = _temp)
+
+  }, [meioTransporte])
 
 
   return (
@@ -203,6 +226,16 @@ export const Dashboard = () => {
                     }} />
                   </Form.Group>
                 </div>
+                <div className='filter'>
+                  <Form.Group className="mb-3" controlId="formBasicEmail">
+                    <Form.Label>Meio de transporte</Form.Label>
+                    <Form.Select onChange={e => setMeioTransporte(e.target.value)}>
+                      <option value="driving">Carro</option>
+                      <option value="walking">Caminhada</option>
+                      <option value="bicycling">Bicicleta</option>
+                    </Form.Select>
+                  </Form.Group>
+                </div>
                 <div className='filter-search'>
                   <Button onClick={handleUpdateChart} >Buscar</Button>
                 </div>
@@ -211,6 +244,8 @@ export const Dashboard = () => {
             </div>
 
             <div ref={mapRef} style={{ height: '400px', width: '100%' }} />
+
+            <div>Tempo até a chegada: {timeUntilGoal}</div>
 
           </Tab>
         </Tabs>
