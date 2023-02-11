@@ -23,6 +23,7 @@ import GoogleMapReact from 'google-map-react';
 import { DirectionsRenderer, DirectionsService } from '@react-google-maps/api';
 
 import axios from 'axios';
+import { setOriginalNode } from 'typescript';
 
 Modal.setAppElement('#root');
 
@@ -67,6 +68,9 @@ export const Dashboard = () => {
   const [origem, setOrigem] = useState("Travessa sorriso de maria, 474");
   const [destino, setDestino] = useState("ulbra santarem");
 
+  const [origemCoords, setOrigemCoords] = useState({ lat: -2.4382325, lng: -54.7158996 });
+  const [destinoCoords, setDestinoCoords] = useState({ lat: -2.4382325, lng: -54.7158996 });
+
 
   const auth = useSelector((state: RootState) => state.auth)
 
@@ -107,11 +111,11 @@ export const Dashboard = () => {
 
     api.get(`maps/api/directions/json?origin=${origem}&destination=${destino}&key=${_API}`)
       .then(response => {
-        console.log("nao fudeu")
-        console.log(response.data.routes);
+        console.log(response.data.routes[0].legs[0]);
+        setOrigemCoords({ lat: response.data.routes[0].legs[0].start_location.lat, lng: response.data.routes[0].legs[0].start_location.lng })
+        setDestinoCoords({ lat: response.data.routes[0].legs[0].end_location.lat, lng: response.data.routes[0].legs[0].end_location.lng })
       })
       .catch(error => {
-        console.log("fudeu")
         console.error(error);
       });
 
