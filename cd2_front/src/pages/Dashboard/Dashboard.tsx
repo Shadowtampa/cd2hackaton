@@ -49,9 +49,27 @@ export const Dashboard = () => {
   const [timeUntilGoal, setTimeUntilGoal] = useState(0);
   const [distance, setDistance] = useState(0);
 
+  const [multiplo, setMultiplo] = useState(true);
+
+
   const mapRef = useRef(null);
 
+  const handleCheckboxChange = (event: { target: { checked: boolean | ((prevState: boolean) => boolean); }; }) => {
+    setMultiplo(event.target.checked);
+
+  };
+
+  useEffect(() => {
+    console.log(multiplo)
+  }, [multiplo])
+
+
   const updateMap = () => {
+
+
+
+
+
     console.log("updateMap")
     //Cria uma instância do DirectionsService do Google Maps
     const directionsService = new google.maps.DirectionsService();
@@ -62,20 +80,50 @@ export const Dashboard = () => {
       {
         origin: origemCoords,
         destination: destinoCoords,
-        travelMode: google.maps.TravelMode.WALKING
+        travelMode: google.maps.TravelMode.WALKING,
+        provideRouteAlternatives: multiplo
       }
       ,
       (result, status) => {
         //Se o status da solicitação de rota for OK e o mapa estiver pronto
         if (status === google.maps.DirectionsStatus.OK && mapRef.current !== null) {
+
+          console.log({ result })
+
           //Cria um novo mapa com zoom 7
           const map = new google.maps.Map(mapRef.current, {
             zoom: 7
           });
+
+          if (!result) return;
           //Renderiza as direções na tela
-          const directionsRenderer = new google.maps.DirectionsRenderer({
-            map: map,
-            directions: result
+          // const directionsRenderer = new google.maps.DirectionsRenderer({
+          //   map: map,
+          //   directions: result
+          // });
+
+          let firstRoute = true;
+
+          // const arr = result.routes;
+          
+
+          const arr = result.routes;
+          const firstItem = arr.shift();
+          if (!firstItem) return
+          arr.push(firstItem);
+          
+          const lastRoute = arr[arr.length - 1];
+
+          arr.forEach(route => {
+            const directionsRenderer = new google.maps.DirectionsRenderer({
+              map: map,
+              directions: result,
+              routeIndex: result.routes.indexOf(route),
+              polylineOptions: route === lastRoute ? { strokeColor: 'blue', strokeWeight: 5 } : { strokeColor: 'red', strokeWeight: 3 }
+            });
+
+            firstRoute = false
+            // directionsRenderer.push(directionsRenderer);
           });
         } else {
           //Exibe o resultado de erro no console
@@ -96,24 +144,24 @@ export const Dashboard = () => {
 
     // Criação de uma instância da API Axios, configurada com a URL base
     const api = axios.create({
-      baseURL:  `https://maps.googleapis.com/`
+      baseURL: `https://maps.googleapis.com/`
     });
 
     // Requisição à API do Google Maps para obter informações sobre a rota
-    api.get(`maps/api/directions/json?origin=${origem}&destination=${destino}&key=${_API}&mode=${meioTransporte}`)
+    api.get(`maps/api/directions/json?origin=${origem}&destination=${destino}&alternatives=${multiplo.toString()}&key=${_API}&mode=${meioTransporte}`)
       .then(response => {
         // Armazenamento das coordenadas de origem e destino retornadas pela API
         setOrigemCoords({ lat: response.data.routes[0].legs[0].start_location.lat, lng: response.data.routes[0].legs[0].start_location.lng })
         setDestinoCoords({ lat: response.data.routes[0].legs[0].end_location.lat, lng: response.data.routes[0].legs[0].end_location.lng })
         setTimeUntilGoal(oldState => oldState = response.data.routes[0].legs[0].duration.text)
-        setDistance(oldState => oldState = response.data.routes[0].legs[0].distance.text )
+        setDistance(oldState => oldState = response.data.routes[0].legs[0].distance.text)
       })
       .catch(error => {
         // Tratamento de erros
         console.error(error);
       });
 
-      updateMap()
+    updateMap()
   }
 
 
@@ -151,13 +199,13 @@ export const Dashboard = () => {
     directionsService.route(
       {
 
-       
+
         // Define a origem da rota como a localização atual do usuário
         origin: origemCoords,
         // Define o destino da rota com o valor armazenado em "destination"
         destination: destinoCoords,
 
-        
+
         travelMode: google.maps.TravelMode.WALKING
 
 
@@ -237,6 +285,14 @@ export const Dashboard = () => {
                       <option value="bicycling">Bicicleta</option>
                     </Form.Select>
                   </Form.Group>
+                </div>
+                <div className='filter'>
+                  <Form.Check
+                    type="checkbox"
+                    label="Multiplas Rotas?"
+                    checked={multiplo}
+                    onChange={handleCheckboxChange}
+                  />
                 </div>
                 <div className='filter-search'>
                   <Button onClick={handleUpdateChart} >Buscar</Button>
