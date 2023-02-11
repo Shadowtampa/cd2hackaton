@@ -1,4 +1,4 @@
-import { Route, BrowserRouter as Router, Routes } from 'react-router-dom'
+import { Route, BrowserRouter as Router, Routes, useNavigate } from 'react-router-dom'
 import { useEffect, useState } from 'react';
 import { Landing } from '../pages/Landing/Landing';
 import { City } from '../pages/City/City';
@@ -12,7 +12,7 @@ import { RootState } from '../services/redux/store';
 
 import { useSelector, useDispatch } from 'react-redux'
 import { Button, Dropdown } from 'react-bootstrap';
-import { logout, toggleLoggedIn } from '../slices/authSlice';
+import { loginHandler, logoutHandler, toggleLoggedIn } from '../slices/authSlice';
 
 // import { loadFromStorage } from '../features/authSlice';
 
@@ -20,8 +20,13 @@ import { ImExit } from 'react-icons/im';
 
 export const AppRoutes = () => {
 
+
   const auth = useSelector((state: RootState) => state.auth)
   const dispatch = useDispatch()
+
+  const handleLogout = () => {
+    dispatch(logoutHandler());
+  }
 
   return (
     <>
@@ -40,14 +45,14 @@ export const AppRoutes = () => {
 
                 <Dropdown>
                   <Dropdown.Toggle variant="success" id="dropdown-basic" >
-                    {auth.userName} <img style={{paddingRight: "15px", borderRadius: "50%"}} src={`https://avatars.dicebear.com/api/adventurer-neutral/${encodeURIComponent(auth.userName.trim())}.svg`}></img>
+                    {auth.userName} 
                   </Dropdown.Toggle>
 
                   <Dropdown.Menu>
-                    <Dropdown.Item href="#/action-1" style={{color: "black"}}>Logout <ImExit  /></Dropdown.Item>
+                    <Dropdown.Item href="/" style={{color: "black"}} onClick={() => { dispatch(logoutHandler()) }}>Logout <ImExit /></Dropdown.Item>
                   </Dropdown.Menu>
                 </Dropdown>
-                : <Button variant="link" onClick={() => { dispatch(toggleLoggedIn()) }} >Login</Button>}
+                : <Button variant="link" onClick={() => { dispatch(loginHandler()) }} >Login</Button>}
             </Navbar.Text>
           </Navbar.Collapse>
         </Container>
@@ -55,11 +60,9 @@ export const AppRoutes = () => {
 
       <Router>
         <Routes>
+          <Route path="/" element={localStorage.getItem('status') ? <Dashboard /> : <Landing />} /> tela de login
           {/* <Route path="/" element={localStorage.getItem('status') === "success" ? <Dashboard /> : <Landing />} /> tela de login */}
-          <Route path="/" element={localStorage.getItem('status') === "success" ? <Dashboard /> : <Landing />} /> {/* tela de login */}
-          <Route path="/city" element={auth.status ? <City /> : <Landing />} /> {/* Tela de cadastro de cidade */}
-          <Route path="/neighbourhood" element={auth.status ? <Neighbourhood /> : <Landing />} /> {/* Tela de cadastro de bairro */}
-          <Route path="/dashboard" element={auth.status ? <Dashboard /> : <Landing />} /> {/* Relatório de cidades e bairro */}
+          <Route path="/city" element={auth.status ? <City /> : <Landing />} /> {/* Tela de cadastro de cidade, mudar para cadastro de */}
           <Route path="/user" element={auth.status ? <User /> : <Landing />} /> {/* Tela de cadastro de usuário. */}
         </Routes>
       </Router>

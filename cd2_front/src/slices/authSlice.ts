@@ -2,6 +2,10 @@ import { createAsyncThunk, createSlice } from '@reduxjs/toolkit'
 import { instance } from '../services/api/axiosInstance';
 import { Login } from '../services/auth/Login';
 
+/**
+ * Presetar, de maneira "suja", um user. Login cria um token aleatório e logoutHandler elimina o token.
+ */
+
 export interface AuthState {
   userName: string,
   status: boolean,
@@ -36,34 +40,30 @@ export const authSlice = createSlice({
     toggleLoggedIn: (state) => {
       state.status = !state.status;
     },
-    loginHandler: (state, action) => {
-      state.status = action.payload.status;
-      state.userName = action.payload.user.name;
-      state.token = action.payload.authorisation.token;
+    loginHandler: (state) => {
+      state.status = true;
+      state.userName = "userTeste";
+      state.token = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c";
 
       localStorage.setItem("status", JSON.stringify(state.status))
       localStorage.setItem("userName", JSON.stringify(state.userName))
       localStorage.setItem("token", JSON.stringify(state.token))
     },
-    logout: (state) => {
+    logoutHandler: (state) => {
 
-      instance.post('/logout',
-        {},
-        {
-          headers: { Authorization: `Bearer ${state.token}` }
-        })
-        .then(function (response: any) {
-          alert("até mais")
-          localStorage.removeItem("status")
-          localStorage.removeItem("userName")
-          localStorage.removeItem("token")
-        })
+      console.log("logout!")
+
+      state.status = false;
+
+      localStorage.removeItem("status")
+      localStorage.removeItem("userName")
+      localStorage.removeItem("token")
     }
   },
 }
 )
 
 // Action creators are generated for each case reducer function
-export const { toggleLoggedIn, loginHandler, logout } = authSlice.actions
+export const { toggleLoggedIn, loginHandler, logoutHandler } = authSlice.actions
 
 export default authSlice.reducer
