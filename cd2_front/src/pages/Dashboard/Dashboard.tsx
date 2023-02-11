@@ -62,9 +62,6 @@ export const Dashboard = () => {
   const [cityState, setCityState] = useState("");
   const [cityFoundation, setCityFoundation] = useState("");
 
-  const [chartName, setMapName] = useState("");
-  const [chartCity, setMapCity] = useState("");
-
   const [origem, setOrigem] = useState("Travessa sorriso de maria, 474");
   const [destino, setDestino] = useState("ulbra santarem");
 
@@ -101,8 +98,57 @@ export const Dashboard = () => {
     setPresentationMaps(neighbourhoods)
   }, [neighbourhoods])
 
-  useEffect(() => {
+  // useEffect(() => {
 
+  //   const API_PROXY = 'https://cors-anywhere.herokuapp.com/';
+
+  //   const api = axios.create({
+  //     baseURL: API_PROXY + `https://maps.googleapis.com/`
+  //   });
+
+  //   api.get(`maps/api/directions/json?origin=${origem}&destination=${destino}&key=${_API}`)
+  //     .then(response => {
+  //       console.log(response.data.routes[0].legs[0]);
+  //       setOrigemCoords({ lat: response.data.routes[0].legs[0].start_location.lat, lng: response.data.routes[0].legs[0].start_location.lng })
+  //       setDestinoCoords({ lat: response.data.routes[0].legs[0].end_location.lat, lng: response.data.routes[0].legs[0].end_location.lng })
+  //     })
+  //     .catch(error => {
+  //       console.error(error);
+  //     });
+
+  //   // getDirections();
+  // }, []);
+
+  const updateMap = () => {
+    const directionsService = new google.maps.DirectionsService();
+
+    console.log(origemCoords)
+    console.log(destinoCoords)
+
+
+    directionsService.route(
+      {
+        origin: origemCoords,
+        destination: destinoCoords,
+        travelMode: google.maps.TravelMode.DRIVING
+      },
+      (result, status) => {
+        if (status === google.maps.DirectionsStatus.OK && mapRef.current !== null) {
+          const map = new google.maps.Map(mapRef.current, {
+            zoom: 7
+          });
+          const directionsRenderer = new google.maps.DirectionsRenderer({
+            map: map,
+            directions: result
+          });
+        } else {
+          console.error(result);
+        }
+      }
+    );
+  }
+
+  const handleUpdateChart = () => {
     const API_PROXY = 'https://cors-anywhere.herokuapp.com/';
 
     const api = axios.create({
@@ -119,18 +165,46 @@ export const Dashboard = () => {
         console.error(error);
       });
 
-    // getDirections();
-  }, []);
+
+  }
+
+
+  useEffect(() => {
+    updateMap()
+  }, [destinoCoords, origemCoords])
+
+  useEffect(() => {
+    console.log(origem)
+  }, [origem])
+
+  useEffect(() => {
+    console.log(destino)
+  }, [destino])
+
 
   const mapRef = useRef(null);
 
   useEffect(() => {
+    if (navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition(function (position) {
+        var pos = {
+          lat: position.coords.latitude,
+          lng: position.coords.longitude
+        };
+        setOrigemCoords(pos)
+      }, function () {
+        // Handle errors here
+      });
+    } else {
+      // Browser doesn't support Geolocation
+    }
+
     const directionsService = new google.maps.DirectionsService();
 
 
     directionsService.route(
       {
-        origin: origin,
+        origin: origemCoords,
         destination: destination,
         travelMode: google.maps.TravelMode.DRIVING
       },
@@ -138,7 +212,7 @@ export const Dashboard = () => {
         if (status === google.maps.DirectionsStatus.OK && mapRef.current !== null) {
           const map = new google.maps.Map(mapRef.current, {
             zoom: 7,
-            center: origin
+            center: origemCoords
           });
           const directionsRenderer = new google.maps.DirectionsRenderer({
             map: map,
@@ -157,6 +231,8 @@ export const Dashboard = () => {
 
   const origin = { lat: -2.4382325, lng: -54.7158996 };
   const destination = { lat: -2.4379422, lng: -54.7183108 };
+
+ 
 
   return (
     <div className='main-wrapper'>
@@ -177,7 +253,7 @@ export const Dashboard = () => {
                 <div className='filter'>
                   <Form.Group className="mb-3" controlId="formBasicEmail">
                     <Form.Label>Origem</Form.Label>
-                    <Form.Control type="text" value="Travessa sorriso de maria, 474" onChange={(event) => {
+                    <Form.Control type="text" onChange={(event) => {
                       setOrigem(event.target.value)
                     }} />
                   </Form.Group>
@@ -185,13 +261,13 @@ export const Dashboard = () => {
                 <div className='filter'>
                   <Form.Group className="mb-3" controlId="formBasicEmail">
                     <Form.Label>Destino</Form.Label>
-                    <Form.Control type="text" value="ulbra santarem" onChange={(event) => {
+                    <Form.Control type="text" onChange={(event) => {
                       setDestino(event.target.value)
                     }} />
                   </Form.Group>
                 </div>
                 <div className='filter-search'>
-                  <Button onClick={() => console.log({ origem, destino })} >Buscar</Button>
+                  <Button onClick={handleUpdateChart} >Buscar</Button>
                 </div>
 
               </div>
@@ -214,83 +290,6 @@ export const Dashboard = () => {
           </Tab>
         </Tabs>
       </div>
-
-      <Modal
-        isOpen={modalIsOpen}
-        onRequestClose={closeModal}
-        style={customStyles}
-        contentLabel="Example Modal"
-      >
-        <h2>Adicionar {registerModel === "city" ? "Cidade" : "Bairro"}</h2>
-        <button onClick={closeModal}>close</button>
-        <Tabs
-          defaultActiveKey={registerModel}
-          id="uncontrolled-tab-example"
-          className="mb-3"
-          onSelect={(event) => event && setRegisterModel(event)}
-
-        >
-          <Tab eventKey="city" title="City">
-
-            <div className='main-table-header-wrapper'>
-              <div className='filter-wrapper'>
-                <div className='filter'>
-                  <Form.Group className="mb-3" controlId="formBasicEmail">
-                    <Form.Label>Nome da Cidade</Form.Label>
-                    <Form.Control type="email" placeholder="Qual cidade?" onChange={(event) => {
-                      setCityName(event.target.value)
-                    }} />
-                  </Form.Group>
-                </div>
-                <div className='filter'>
-                  <Form.Group className="mb-3" controlId="formBasicEmail">
-                    <Form.Label>Estado</Form.Label>
-                    <Form.Control type="email" placeholder="Qual Estado?" onChange={(event) => setCityState(event.target.value)} />
-                  </Form.Group>
-                </div>
-                <div className='filter'>
-                  <Form.Group className="mb-3" controlId="formBasicEmail">
-                    <Form.Label>Data da Fundação</Form.Label>
-                    <Form.Control type="date" placeholder="Data de Fundação?" onChange={(event) => setCityFoundation(event.target.value)} />
-
-                  </Form.Group>
-                </div>
-
-              </div>
-
-
-
-            </div>
-
-          </Tab>
-          <Tab eventKey="chart" title="Map">
-
-            <div className='main-table-header-wrapper'>
-
-              <div className='filter-wrapper'>
-                <div className='filter'>
-                  <Form.Group className="mb-3" controlId="formBasicEmail">
-                    <Form.Label>Origem</Form.Label>
-                    <Form.Control type="text" onChange={(event) => {
-                      setMapName(event.target.value)
-                    }} />
-                  </Form.Group>
-                </div>
-                <div className='filter'>
-                  <Form.Group className="mb-3" controlId="formBasicEmail">
-                    <Form.Label>Destino</Form.Label>
-                    <Form.Control type="text" onChange={(event) => {
-                      setMapCity(event.target.value)
-                    }} />
-                  </Form.Group>
-                </div>
-
-              </div>
-            </div>
-
-          </Tab>
-        </Tabs>
-      </Modal>
     </div>
   )
 }
