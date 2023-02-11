@@ -27,7 +27,7 @@ import { setOriginalNode } from 'typescript';
 
 Modal.setAppElement('#root');
 
-const _API = "AIzaSyApL72fzMsNAWZ75YfIojgTMIEGMj-l3QU";
+const _API = "";
 
 const defaultProps = {
   center: {
