@@ -33,7 +33,7 @@ export const AppRoutes = () => {
     <>
       <Navbar bg="dark" variant="dark">
         <Container>
-          <Navbar.Brand href="/dashboard">
+          <Navbar.Brand href="/">
             Equipe Rocket
           </Navbar.Brand>
           <Navbar.Collapse className="justify-content-end">

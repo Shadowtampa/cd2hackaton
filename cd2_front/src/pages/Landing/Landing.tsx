@@ -35,7 +35,7 @@ export const Landing = () => {
   const dispatch = useDispatch()
 
   const handleLogin = () => {
-    navigate("/");
+    navigate("/dashboard");
     dispatch(toggleLoggedIn())
   }
 
@@ -59,21 +59,42 @@ export const Landing = () => {
 
   const axios = require('axios').default;
 
-  const handleLoginAPI =  () => {
-    dispatch(loginHandler())
-    navigate("/");
-  }
+  const handleLoginAPI = async (credentials: { email: string, password: string }) => {
+    instance.post('/login', credentials)
+      .then(function (response: any) {
 
-  /**
-   * 
-   * @param credentials 
-   *  Função visando a implementação futura de uma API
-   */
+        if (response.data.status === "success") {
+          dispatch(loginHandler(response.data))
+        } else {
+          alert("Houve um problema no seu login!")
+        }
+      })
+  }
   const handleRegisterAPI = async (credentials: { nameReg: string, emailReg: string, passwordReg: string }) => {
+    instance.post('/register', { name: credentials.nameReg, email: credentials.emailReg, password: credentials.passwordReg })
+      .then(function (response: any) {
 
+        if (response.data.errors) {
+          alert("Houve um problema no seu registro!")
+        } else {
+          instance.post('/login', {email: credentials.emailReg, password : credentials.passwordReg})
+            .then(function (response: any) {
+
+              
+
+              if (response.data.status === "success") {
+                dispatch(loginHandler(response.data))
+              } else {
+                alert("Houve um problema no seu login!")
+              }
+            })
+        }
+      })
+      .catch(function (response: any) {
+
+        alert("Houve um erro com sua requisição")
+      })
   }
-
-
 
   return (
     <div className="main-wrapper" style={{ marginTop: "10rem" }}>
@@ -138,7 +159,7 @@ export const Landing = () => {
             <Form.Label>Password</Form.Label>
             <Form.Control type="password" placeholder="Password" onChange={(event) => setPassword(event.target.value)} />
           </Form.Group>
-          <Button variant="primary" onClick={() => { handleLoginAPI()}}>
+          <Button variant="primary" onClick={() => { handleLoginAPI({ email, password }) }}>
             Submit
           </Button>
         </Form>
