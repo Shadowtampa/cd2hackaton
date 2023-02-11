@@ -17,6 +17,7 @@ import { loginHandler, logoutHandler, toggleLoggedIn } from '../slices/authSlice
 // import { loadFromStorage } from '../features/authSlice';
 
 import { ImExit } from 'react-icons/im';
+import { DashboardTeste } from '../pages/DashboardTeste/Dashboard';
 
 export const AppRoutes = () => {
 
@@ -61,6 +62,7 @@ export const AppRoutes = () => {
       <Router>
         <Routes>
           <Route path="/" element={localStorage.getItem('status') ? <Dashboard /> : <Landing />} /> tela de login
+          <Route path="/teste" element={localStorage.getItem('status') ? <DashboardTeste /> : <Landing />} /> tela de login
           {/* <Route path="/" element={localStorage.getItem('status') === "success" ? <Dashboard /> : <Landing />} /> tela de login */}
           <Route path="/city" element={auth.status ? <City /> : <Landing />} /> {/* Tela de cadastro de cidade, mudar para cadastro de */}
           <Route path="/user" element={auth.status ? <User /> : <Landing />} /> {/* Tela de cadastro de usuário. */}
