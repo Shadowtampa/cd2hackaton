@@ -28,6 +28,10 @@ import { setOriginalNode } from 'typescript';
 
 const _API = "AIzaSyApL72fzMsNAWZ75YfIojgTMIEGMj-l3QU";
 
+function ListItem(props: { value: string | number | boolean | React.ReactElement<any, string | React.JSXElementConstructor<any>> | React.ReactFragment | React.ReactPortal | null | undefined; }) {
+  return <li>{props.value}</li>;
+}
+
 export const Dashboard = () => {
 
   // Utilização do hook "useSelector" do React Redux para obter informações do estado da aplicação.
@@ -50,6 +54,21 @@ export const Dashboard = () => {
   const [distance, setDistance] = useState(0);
 
   const [multiplo, setMultiplo] = useState(true);
+
+
+  interface IWaypoints {
+    location: string,
+    stopover: boolean
+  }
+
+  const [waypoints, setWaypoints] = useState<IWaypoints[]>([
+
+  ]);
+
+
+  const [waypointsUse, setWaypointsUse] = useState(false);
+
+  const [destination, setDestination] = useState('');
 
 
   const mapRef = useRef(null);
@@ -81,7 +100,8 @@ export const Dashboard = () => {
         origin: origemCoords,
         destination: destinoCoords,
         travelMode: google.maps.TravelMode.WALKING,
-        provideRouteAlternatives: multiplo
+        provideRouteAlternatives: multiplo,
+        waypoints: waypoints,
       }
       ,
       (result, status) => {
@@ -105,13 +125,13 @@ export const Dashboard = () => {
           let firstRoute = true;
 
           // const arr = result.routes;
-          
+
 
           const arr = result.routes;
           const firstItem = arr.shift();
           if (!firstItem) return
           arr.push(firstItem);
-          
+
           const lastRoute = arr[arr.length - 1];
 
           arr.forEach(route => {
@@ -164,6 +184,9 @@ export const Dashboard = () => {
     updateMap()
   }
 
+  const handleInputChange = (event: { target: { value: React.SetStateAction<string>; }; }) => {
+    setDestination(event.target.value);
+  };
 
   useEffect(() => {
     // console.log("executado pois código foi ativado")
@@ -243,6 +266,38 @@ export const Dashboard = () => {
 
   }, [meioTransporte])
 
+  const Repeat = (props: { count: any; }) => {
+    const items = Array.from({ length: props.count }, (_, index) => (
+      <Form.Group key={index} className="mb-3" controlId="formBasicEmail">
+        <Form.Label>Parada {`Item ${index + 1}`}</Form.Label>
+        <Form.Control type="text" value={destination} onChange={handleInputChange} />
+      </Form.Group>
+    ));
+    return <div>{items}</div>;
+  }
+
+  const handleAddWaypoints = () => {
+    setWaypointsUse(true);
+
+    if (destinoCoords.lat + "," + destinoCoords.lng === destino) return
+    setWaypoints([
+      ...waypoints,
+      {
+        location: destino,
+        stopover: true
+      },])
+  }
+
+  const handleRemoveWaypoint = (location: string) => {
+    setWaypoints(oldState => oldState = waypoints.filter(function (waypoint) {
+      return waypoint.location !== location;
+    }));
+  }
+  useEffect(() => {
+    console.log(waypoints)
+    console.log(destinoCoords)
+  }, [waypoints])
+
 
   return (
     <div className='main-wrapper'>
@@ -269,13 +324,39 @@ export const Dashboard = () => {
                   </Form.Group>
                 </div>
                 <div className='filter'>
-                  <Form.Group className="mb-3" controlId="formBasicEmail">
+                  <Form.Group key="destinoOriginal" className="mb-3" controlId="formBasicEmail">
                     <Form.Label>Destino</Form.Label>
                     <Form.Control type="text" value={destino} onChange={(event) => {
                       setDestino(event.target.value)
                     }} />
                   </Form.Group>
+
+                  {
+                    waypoints && waypoints.map((waypoint) => {
+                      return (
+                        <div>
+                          <Form.Group key={`item-${Date.now()}-${Math.random()}`} className="mb-3">
+                            <Form.Control type="text" disabled value={waypoint.location} />
+                          </Form.Group>
+
+                          <Button className="btn-danger" onClick={() => handleRemoveWaypoint(waypoint.location)}>Remover</Button>
+                        </div>
+                      )
+                    })
+                  }
+
+
+
                 </div>
+
+
+
+                <div className='filter'>
+                  <Button variant="primary" type="submit" onClick={() => handleAddWaypoints()}>
+                    Adicionar ponto de parada
+                  </Button>
+                </div>
+
                 <div className='filter'>
                   <Form.Group className="mb-3" controlId="formBasicEmail">
                     <Form.Label>Meio de transporte</Form.Label>
