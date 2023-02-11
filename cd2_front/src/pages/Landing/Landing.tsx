@@ -66,10 +66,10 @@ export const Landing = () => {
       }
     })
       .then(function (response: any) {
-        
+
 
         if (response.data !== null) {
-          
+
           dispatch(loginHandler(response.data))
         } else {
           alert("Houve um problema no seu login!")
@@ -77,29 +77,35 @@ export const Landing = () => {
       })
   }
   const handleRegisterAPI = async (credentials: { nameReg: string, emailReg: string, passwordReg: string }) => {
-    instance.post('/register', { name: credentials.nameReg, email: credentials.emailReg, password: credentials.passwordReg })
+    instance.post('/v1/usuarios', {
+      body: {
+        "nome": credentials.nameReg, 
+        "login": credentials.emailReg, 
+        "senha": credentials.passwordReg
+      }
+    })
       .then(function (response: any) {
 
         if (response.data.errors) {
           alert("Houve um problema no seu registro!")
         } else {
-          instance.post('/login', {email: credentials.emailReg, password : credentials.passwordReg})
-            .then(function (response: any) {
+          instance.get('/v1/usuarios/login', {
+            params: {
+              login: credentials.emailReg, senha: credentials.passwordReg
+            }
+          }).then(function (response: any) {
 
-              
 
-              if (response.data.status === "success") {
-                dispatch(loginHandler(response.data))
-              } else {
-                alert("Houve um problema no seu login!")
-              }
-            })
+            if (response.data !== null) {
+
+              dispatch(loginHandler(response.data))
+            } else {
+              alert("Houve um problema no seu login!")
+            }
+          })
         }
       })
-      .catch(function (response: any) {
 
-        alert("Houve um erro com sua requisição")
-      })
   }
 
   return (
