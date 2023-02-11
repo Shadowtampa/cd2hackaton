@@ -21,7 +21,7 @@ import { setNeighbourhood } from '../../slices/neighbourhoodSlice';
 
 import GoogleMapReact from 'google-map-react';
 import { DirectionsRenderer, DirectionsService } from '@react-google-maps/api';
-
+import { GoogleMap, useJsApiLoader } from '@react-google-maps/api';
 import axios from 'axios';
 
 Modal.setAppElement('#root');
@@ -36,6 +36,16 @@ const defaultProps = {
   zoom: 11
 };
 
+
+const containerStyle = {
+  width: '400px',
+  height: '400px'
+};
+
+const center = {
+  lat: -3.745,
+  lng: -50.523
+};
 
 const AnyReactComponent = ({ text }: any) => <div>{text}</div>;
 
@@ -81,6 +91,61 @@ export const Dashboard = () => {
   }
 
 
+  const [directions, setDirections] = useState(null);
+
+  const origin = {
+    lat: -2.4379422,
+    lng: -54.7183108
+  };
+  const destination = {
+    lat: -22.9068619,
+    lng: -43.172946
+  };
+
+  const { isLoaded } = useJsApiLoader({
+    id: 'google-map-script',
+    googleMapsApiKey: "AIzaSyApL72fzMsNAWZ75YfIojgTMIEGMj-l3QU"
+  })
+
+  const [map, setMap] = React.useState(null)
+
+  // // const onLoad = React.useCallback(function callback(map:any) {
+  // //   // This is just an example of getting and using the map instance!!! don't just blindly copy!
+  // //   const bounds = new window.google.maps.LatLngBounds(center);
+  // //   map.fitBounds(bounds);
+
+  // //   setMap(map)
+  // // }, [])
+  const onLoad = async () => {
+    const directionsService = new window.google.maps.DirectionsService();
+    const directionsDisplay = new window.google.maps.DirectionsRenderer();
+    directionsDisplay.setDirections({routes:directions as any})
+    directionsService.route(
+      {
+        origin: origin,
+        destination: destination,
+        travelMode: window.google.maps.TravelMode.DRIVING
+      },
+      (result: any, status) => {
+        if (status === window.google.maps.DirectionsStatus.OK) {
+          setDirections(result);
+        } else {
+          console.error(`error fetching directions ${result}`);
+        }
+      }
+    );
+  };
+  console.log('directions', directions)
+  useEffect(() => {
+
+    onLoad();
+  }, []);
+
+  const onUnmount = React.useCallback(function callback(map: any) {
+    setMap(null)
+  }, [])
+
+
   const cities = useSelector((state: RootState) => state.city.cities);
   const neighbourhoods = useSelector((state: RootState) => state.neighbourhood.neighbourhoods);
 
@@ -97,26 +162,26 @@ export const Dashboard = () => {
     setPresentationMaps(neighbourhoods)
   }, [neighbourhoods])
 
-  useEffect(() => {
+  // useEffect(() => {
 
-    const API_PROXY = 'https://cors-anywhere.herokuapp.com/';
+  //   const API_PROXY = 'https://cors-anywhere.herokuapp.com/';
 
-    const api = axios.create({
-      baseURL: API_PROXY + `https://maps.googleapis.com/`
-    });
+  //   const api = axios.create({
+  //     baseURL: API_PROXY + `https://maps.googleapis.com/`
+  //   });
 
-    api.get(`maps/api/directions/json?origin=${origem}&destination=${destino}&key=${_API}`)
-      .then(response => {
-        console.log("nao fudeu")
-        console.log(response.data.routes);
-      })
-      .catch(error => {
-        console.log("fudeu")
-        console.error(error);
-      });
+  //   api.get(`maps/api/directions/json?origin=${origem}&destination=${destino}&key=${_API}`)
+  //     .then(response => {
+  //       console.log("nao fudeu")
+  //       console.log(response.data.routes);
+  //     })
+  //     .catch(error => {
+  //       console.log("fudeu")
+  //       console.error(error);
+  //     });
 
-    // getDirections();
-  }, []);
+  //   // getDirections();
+  // }, []);
 
   const mapRef = useRef(null);
 
@@ -149,11 +214,8 @@ export const Dashboard = () => {
 
 
 
-  const [directions, setDirections] = useState(null);
 
-  const origin = { lat: -2.4382325, lng: -54.7158996 };
-  const destination = { lat: -2.4379422, lng: -54.7183108 };
-
+  console.log('directions', directions)
   return (
     <div className='main-wrapper'>
       <div className='dash-table'>
@@ -204,8 +266,19 @@ export const Dashboard = () => {
               </GoogleMapReact>
             </div> */}
 
-            <div ref={mapRef} style={{ height: '400px', width: '100%' }} />
-
+            {/* <div ref={mapRef} style={{ height: '400px', width: '100%' }} /> */}
+            {isLoaded ? (
+              <GoogleMap
+                mapContainerStyle={containerStyle}
+                center={center}
+                zoom={10}
+                onLoad={onLoad}
+                onUnmount={onUnmount}
+              >
+                { /* Child components, such as markers, info windows, etc. */}
+                <></>
+              </GoogleMap>
+            ) : <></>}
 
           </Tab>
         </Tabs>
