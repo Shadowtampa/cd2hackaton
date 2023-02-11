@@ -26,7 +26,7 @@ import axios from 'axios';
 import { setOriginalNode } from 'typescript';
 
 
-const _API = "AIzaSyApL72fzMsNAWZ75YfIojgTMIEGMj-l3QU";
+const _API = "";
 
 function ListItem(props: { value: string | number | boolean | React.ReactElement<any, string | React.JSXElementConstructor<any>> | React.ReactFragment | React.ReactPortal | null | undefined; }) {
   return <li>{props.value}</li>;
@@ -349,11 +349,9 @@ export const Dashboard = () => {
 
                 </div>
 
-
-
                 <div className='filter'>
-                  <Button variant="primary" type="submit" onClick={() => handleAddWaypoints()}>
-                    Adicionar ponto de parada
+                  <Button variant={`${destinoCoords.lat + "," + destinoCoords.lng === destino ? "danger" : "primary"}`} type="submit" onClick={() => handleAddWaypoints()}>
+                    Adicionar ponto de paraa
                   </Button>
                 </div>
 
