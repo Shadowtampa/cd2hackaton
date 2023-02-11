@@ -35,7 +35,7 @@ export const Landing = () => {
   const dispatch = useDispatch()
 
   const handleLogin = () => {
-    navigate("/dashboard");
+    navigate("/");
     dispatch(toggleLoggedIn())
   }
 
@@ -61,7 +61,7 @@ export const Landing = () => {
 
   const handleLoginAPI =  () => {
     dispatch(loginHandler())
-    navigate("/dashboard");
+    navigate("/");
   }
 
   /**
