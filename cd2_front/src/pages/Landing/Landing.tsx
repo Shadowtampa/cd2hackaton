@@ -59,11 +59,17 @@ export const Landing = () => {
 
   const axios = require('axios').default;
 
-  const handleLoginAPI = async (credentials: { email: string, password: string }) => {
-    instance.post('/login', credentials)
+  const handleLoginAPI = async (credentials: { login: string, senha: string }) => {
+    instance.get('/v1/usuarios/login', {
+      params: {
+        login: credentials.login, senha: credentials.senha
+      }
+    })
       .then(function (response: any) {
+        
 
-        if (response.data.status === "success") {
+        if (response.data !== null) {
+          
           dispatch(loginHandler(response.data))
         } else {
           alert("Houve um problema no seu login!")
@@ -159,7 +165,7 @@ export const Landing = () => {
             <Form.Label>Password</Form.Label>
             <Form.Control type="password" placeholder="Password" onChange={(event) => setPassword(event.target.value)} />
           </Form.Group>
-          <Button variant="primary" onClick={() => { handleLoginAPI({ email, password }) }}>
+          <Button variant="primary" onClick={() => { handleLoginAPI({ login: email, senha: password }) }}>
             Submit
           </Button>
         </Form>

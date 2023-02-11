@@ -53,7 +53,7 @@ export const AppRoutes = () => {
                     <Dropdown.Item href="/" style={{color: "black"}} onClick={() => { dispatch(logoutHandler()) }}>Logout <ImExit /></Dropdown.Item>
                   </Dropdown.Menu>
                 </Dropdown>
-                : <Button variant="link" onClick={() => { dispatch(loginHandler()) }} >Login</Button>}
+                : <Button variant="link" onClick={() => { dispatch(loginHandler({login: "", senha: ""})) }} >Login</Button>}
             </Navbar.Text>
           </Navbar.Collapse>
         </Container>

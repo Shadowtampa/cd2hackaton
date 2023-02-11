@@ -45,10 +45,10 @@ export const authSlice = createSlice({
     toggleLoggedIn: (state) => {
       state.status = !state.status;
     },
-    loginHandler: (state) => {
+    loginHandler: (state, actions) => {
       state.status = true;
-      state.userName = "userTeste";
-      state.userId = 0;
+      state.userName = actions.payload.nome;
+      state.userId = actions.payload.id;
       state.token = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c";
 
       localStorage.setItem("status", JSON.stringify(state.status))
