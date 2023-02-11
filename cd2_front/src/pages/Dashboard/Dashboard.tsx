@@ -47,6 +47,7 @@ export const Dashboard = () => {
   const [meioTransporte, setMeioTransporte] = useState("WALKING");
 
   const [timeUntilGoal, setTimeUntilGoal] = useState(0);
+  const [distance, setDistance] = useState(0);
 
   const mapRef = useRef(null);
 
@@ -105,6 +106,7 @@ export const Dashboard = () => {
         setOrigemCoords({ lat: response.data.routes[0].legs[0].start_location.lat, lng: response.data.routes[0].legs[0].start_location.lng })
         setDestinoCoords({ lat: response.data.routes[0].legs[0].end_location.lat, lng: response.data.routes[0].legs[0].end_location.lng })
         setTimeUntilGoal(oldState => oldState = response.data.routes[0].legs[0].duration.text)
+        setDistance(oldState => oldState = response.data.routes[0].legs[0].distance.text )
       })
       .catch(error => {
         // Tratamento de erros
@@ -246,6 +248,7 @@ export const Dashboard = () => {
             <div ref={mapRef} style={{ height: '400px', width: '100%' }} />
 
             <div>Tempo até a chegada: {timeUntilGoal}</div>
+            <div>Distância até a chegada: {distance}</div>
 
           </Tab>
         </Tabs>
